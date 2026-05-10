@@ -1827,7 +1827,7 @@ textarea { resize: vertical; min-height: 72px; }
       </div>
 
       <!-- FAB Carrinho (visível só no mobile quando tem itens) -->
-      <button id="pdv-cart-fab" class="pdv-cart-fab" onclick="rolarParaCarrinho()" style="display:none;">
+      <button id="pdv-cart-fab" class="pdv-cart-fab" onclick="rolarParaCarrinho()" type="button">
         <span class="pdv-cart-fab-icon">🛒</span>
         <span class="pdv-cart-fab-info">
           <span id="pdv-fab-qtd">0 itens</span>
@@ -5667,4 +5667,4 @@ function _runImportSeed() {
       id: uid(), nome: ing.nome, categoria: ing.categoria,
       unidade: ing.unidade, qtdEmbalagem: ing.qtdEmbalagem,
       custoEmbalagem: ing.custoEmbalagem, estoque: ing.estoque || 0,
-     
+      fornece
