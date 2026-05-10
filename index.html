@@ -12,14 +12,15 @@
 <meta name="apple-mobile-web-app-title" content="Tortas dos Silva">
 <meta name="mobile-web-app-capable" content="yes">
 
-<!-- Favicon SVG (logo Torta dos Silva) -->
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Ccircle cx='100' cy='100' r='100' fill='%23E8782C'/%3E%3Ctext x='28' y='150' font-family='Georgia,serif' font-size='150' font-weight='700' fill='white'%3ES%3C/text%3E%3Ctext x='80' y='90' font-family='Arial,sans-serif' font-size='22' font-weight='700' fill='white'%3ETORTA%3C/text%3E%3Ctext x='90' y='118' font-family='Arial,sans-serif' font-size='18' font-weight='600' fill='white'%3EDOS%3C/text%3E%3Ctext x='80' y='168' font-family='Arial,sans-serif' font-size='30' font-weight='700' fill='white'%3EILVA%3C/text%3E%3Cellipse cx='148' cy='115' rx='18' ry='8' fill='%23F5C340'/%3E%3Cpath d='M132 115 Q140 108 148 110 Q156 108 164 115' stroke='%23B8560F' stroke-width='2' fill='none'/%3E%3C/svg%3E">
+<!-- Favicon (logo real Tortas dos Silva) -->
+<link rel="icon" type="image/png" sizes="512x512" href="logo.png">
+<link rel="icon" type="image/png" sizes="192x192" href="logo-192.png">
 
-<!-- Apple touch icon (mesmo SVG via referência local que criaremos) -->
-<link rel="apple-touch-icon" href="logo.png">
+<!-- Apple touch icon -->
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 
 <!-- Manifest PWA inline -->
-<link rel="manifest" href='data:application/manifest+json,{"name":"Tortas dos Silva","short_name":"Tortas Silva","start_url":"./","display":"standalone","background_color":"%23FFFBE8","theme_color":"%23E8782C","icons":[{"src":"logo.png","sizes":"512x512","type":"image/png"}]}'>
+<link rel="manifest" href='data:application/manifest+json,{"name":"Tortas dos Silva","short_name":"Tortas Silva","start_url":"./","display":"standalone","background_color":"%23FFFBE8","theme_color":"%23E8782C","icons":[{"src":"logo-192.png","sizes":"192x192","type":"image/png"},{"src":"logo.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}'>
 
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -110,16 +111,19 @@ h1, h2, h3, .serif {
   border-right: 1px solid rgba(232, 120, 44, 0.2);
 }
 .logo {
-  padding: 0 22px 22px;
+  padding: 4px 22px 18px;
   border-bottom: 1px solid rgba(232, 120, 44, 0.2);
   margin-bottom: 12px;
+  text-align: center;
 }
-.logo h1 {
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--laranja-dark);
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  line-height: 1.05;
+.logo-img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: block;
+  margin: 0 auto 8px;
+  box-shadow: 0 2px 12px rgba(232, 120, 44, 0.25);
+  object-fit: cover;
 }
 .logo p {
   font-size: 10px;
@@ -1626,7 +1630,7 @@ textarea { resize: vertical; min-height: 72px; }
 
 <aside class="sidebar">
   <div class="logo">
-    <h1>Tortas do Silva</h1>
+    <img src="logo.png" alt="Tortas dos Silva" class="logo-img">
     <p>Hub de Vendas</p>
   </div>
 
@@ -5645,3 +5649,4 @@ carregarConfig();
 </script>
 </body>
 </html>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
