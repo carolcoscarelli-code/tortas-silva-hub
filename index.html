@@ -1303,6 +1303,67 @@ textarea { resize: vertical; min-height: 72px; }
 .desp-card-del:hover { background: rgba(229,57,53,0.1); }
 .desp-card-del { margin-left: 0; }
 
+/* ====================== FAB Carrinho PDV (mobile) ====================== */
+.pdv-cart-fab {
+  display: none;
+  position: fixed;
+  bottom: 84px; /* acima da bottom-nav (~70px) */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1300;
+  background: linear-gradient(135deg, var(--laranja), var(--laranja-dark));
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 22px;
+  box-shadow: 0 6px 20px rgba(232, 120, 44, 0.45);
+  cursor: pointer;
+  font-family: inherit;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+  min-width: 240px;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.pdv-cart-fab:active { transform: translateX(-50%) scale(0.96); }
+.pdv-cart-fab.pulse {
+  animation: fabPulse 0.4s ease;
+}
+@keyframes fabPulse {
+  0% { transform: translateX(-50%) scale(1); }
+  50% { transform: translateX(-50%) scale(1.08); box-shadow: 0 8px 28px rgba(232, 120, 44, 0.6); }
+  100% { transform: translateX(-50%) scale(1); }
+}
+.pdv-cart-fab-icon { font-size: 22px; }
+.pdv-cart-fab-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.1;
+  flex: 1;
+}
+#pdv-fab-qtd { font-size: 11px; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+#pdv-fab-total { font-size: 18px; font-family: 'Cormorant Garamond', serif; }
+.pdv-cart-fab-arrow {
+  font-size: 16px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: arrowBounce 1.5s ease-in-out infinite;
+}
+@keyframes arrowBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(3px); }
+}
+@media (max-width: 768px) {
+  .pdv-cart-fab.show { display: flex; }
+}
+
 /* ====================== Tabela de Precificação ====================== */
 .prec-tabela-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .prec-tabela { width: 100%; min-width: 1000px; }
@@ -1764,6 +1825,17 @@ textarea { resize: vertical; min-height: 72px; }
         </div>
         <div class="pdv-products" id="pdv-products"></div>
       </div>
+
+      <!-- FAB Carrinho (visível só no mobile quando tem itens) -->
+      <button id="pdv-cart-fab" class="pdv-cart-fab" onclick="rolarParaCarrinho()" style="display:none;">
+        <span class="pdv-cart-fab-icon">🛒</span>
+        <span class="pdv-cart-fab-info">
+          <span id="pdv-fab-qtd">0 itens</span>
+          <span id="pdv-fab-total">R$ 0,00</span>
+        </span>
+        <span class="pdv-cart-fab-arrow">↓</span>
+      </button>
+
       <div class="cart">
         <div class="panel-title">🛒 Carrinho</div>
         <div class="cart-items" id="cart-items">
@@ -3582,6 +3654,19 @@ function adicionarCarrinho(id) {
   if (existing) existing.qtd++;
   else cart.push({produtoId: id, nome: p.nome, precoUnit: preco, qtd: 1});
   updateCart();
+  // Feedback rápido + pulse no FAB
+  toast(`+ ${p.nome}`, 'success');
+  const fab = document.getElementById('pdv-cart-fab');
+  if (fab) {
+    fab.classList.remove('pulse');
+    void fab.offsetWidth;  // força reflow
+    fab.classList.add('pulse');
+  }
+}
+
+function rolarParaCarrinho() {
+  const cartEl = document.querySelector('.cart');
+  if (cartEl) cartEl.scrollIntoView({behavior:'smooth', block:'start'});
 }
 
 function updateCart() {
@@ -3608,6 +3693,20 @@ function updateCart() {
   const desconto = num(document.getElementById('cart-desconto').value);
   document.getElementById('cart-subtotal').textContent = money(subtotal);
   document.getElementById('cart-total').textContent = money(Math.max(0, subtotal - desconto));
+
+  // Atualiza o FAB (visível só no mobile via CSS)
+  const fab = document.getElementById('pdv-cart-fab');
+  if (fab) {
+    const totalQtd = cart.reduce((s,i) => s + i.qtd, 0);
+    const total = Math.max(0, subtotal - desconto);
+    if (totalQtd > 0) {
+      fab.classList.add('show');
+      document.getElementById('pdv-fab-qtd').textContent = totalQtd === 1 ? '1 item' : `${totalQtd} itens`;
+      document.getElementById('pdv-fab-total').textContent = money(total);
+    } else {
+      fab.classList.remove('show');
+    }
+  }
 }
 
 function ajustarQtd(idx, delta) {
@@ -5568,84 +5667,4 @@ function _runImportSeed() {
       id: uid(), nome: ing.nome, categoria: ing.categoria,
       unidade: ing.unidade, qtdEmbalagem: ing.qtdEmbalagem,
       custoEmbalagem: ing.custoEmbalagem, estoque: ing.estoque || 0,
-      fornecedor: ing.fornecedor || '', obs: ''
-    });
-  });
-  const mapaIng = {};
-  db.insumos.forEach(i => { mapaIng[_normNome(i.nome)] = i.id; });
-  SEED_TORTAS_SILVA.bases.forEach(b => {
-    const ficha = b.ingredientes.map(ing => ({
-      insumoId: _acharIngrediente(ing.nome, mapaIng),
-      quantidade: ing.qtd
-    })).filter(f => f.insumoId);
-    const cat = getCategoria(b.categoriaId);
-    db.produtos.push({
-      id: uid(), tipo: 'receita_base', nome: b.nome,
-      emoji: cat ? cat.emoji : '🧪',
-      categoriaId: b.categoriaId, categoria: cat ? cat.nome : '',
-      descricao: 'Receita base', ficha, ativo: true, precos: {},
-      rendimento: {qtd: b.rendimento, unidade: b.unidadeRend || 'kg'}
-    });
-  });
-  sincronizarTodasReceitasBase();
-  db.insumos.forEach(i => { mapaIng[_normNome(i.nome)] = i.id; });
-  SEED_TORTAS_SILVA.tortas.forEach(t => {
-    const ficha = t.ingredientes.map(ing => ({
-      insumoId: _acharIngrediente(ing.nome, mapaIng),
-      quantidade: ing.qtd
-    })).filter(f => f.insumoId);
-    const cat = getCategoria(t.categoriaId);
-    db.produtos.push({
-      id: uid(), tipo: 'produto', nome: t.nome,
-      emoji: t.emoji, categoriaId: t.categoriaId,
-      categoria: cat ? cat.nome : '',
-      descricao: '', ficha, ativo: true,
-      precos: t.precos || {loja:0, ifood:0, revendas:0},
-      precoVenda: (t.precos && t.precos.loja) || 0,
-      rendimento: {qtd: t.rendimento, unidade: 'un'}
-    });
-  });
-  SEED_TORTAS_SILVA.custosFixos.forEach(c => {
-    db.custosFixos.push({id: uid(), descricao: c.desc, valor: c.valor});
-  });
-  db.custosVariaveis = [
-    {id: uid(), descricao: 'Taxa de cartao', valor: 3},
-    {id: uid(), descricao: 'Impostos (Simples)', valor: 10},
-    {id: uid(), descricao: 'Perdas', valor: 3}
-  ];
-  save();
-}
-
-function importarTortasDoSilva() {
-  if (!confirm('Isso vai SUBSTITUIR todos os dados atuais. Continuar?')) return;
-  _runImportSeed();
-  toast(`Importados: ${db.insumos.length} ingredientes, ${SEED_TORTAS_SILVA.bases.length} receitas base, ${SEED_TORTAS_SILVA.tortas.length} produtos`, 'success');
-  setTimeout(() => { document.querySelector('.nav-item[data-section=dashboard]').click(); }, 800);
-}
-
-function carregarExemplos() { importarTortasDoSilva(); }
-
-// =============== INIT ===============
-load();
-setTimeout(() => { iniciarCloudSync(); }, 100);
-
-if (db.insumos.length === 0 && db.produtos.length === 0 && !localStorage.getItem('tortas-silva-first-seen')) {
-  localStorage.setItem('tortas-silva-first-seen', '1');
-  localStorage.setItem(SEED_VERSION_KEY, String(SEED_VERSION));
-  _runImportSeed();
-  setTimeout(() => toast('✨ Dados da Tortas dos Silva carregados (Edição 2026)', 'success'), 500);
-} else {
-  const versaoAtual = parseInt(localStorage.getItem(SEED_VERSION_KEY) || '1', 10);
-  if (versaoAtual < SEED_VERSION) {
-    try {
-      const r = migrarParaSeedV2();
-      setTimeout(() => toast(`✨ Fichas atualizadas: ${r.receitasBase} receitas base + ${r.produtos} produtos (Edição 2026)`, 'success'), 500);
-    } catch (e) { console.error('Erro na migração:', e); }
-  }
-}
-
-renderDashboard();
-carregarConfig();
-</script>
-</body>
-</html>
+     
