@@ -3,7 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tortas do Silva — Hub de Vendas</title>
+<title>Tortas dos Silva — Hub de Vendas</title>
+
+<!-- PWA / Ícone do app -->
+<meta name="theme-color" content="#E8782C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Tortas dos Silva">
+<meta name="mobile-web-app-capable" content="yes">
+
+<!-- Favicon SVG (logo Torta dos Silva) -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Ccircle cx='100' cy='100' r='100' fill='%23E8782C'/%3E%3Ctext x='28' y='150' font-family='Georgia,serif' font-size='150' font-weight='700' fill='white'%3ES%3C/text%3E%3Ctext x='80' y='90' font-family='Arial,sans-serif' font-size='22' font-weight='700' fill='white'%3ETORTA%3C/text%3E%3Ctext x='90' y='118' font-family='Arial,sans-serif' font-size='18' font-weight='600' fill='white'%3EDOS%3C/text%3E%3Ctext x='80' y='168' font-family='Arial,sans-serif' font-size='30' font-weight='700' fill='white'%3EILVA%3C/text%3E%3Cellipse cx='148' cy='115' rx='18' ry='8' fill='%23F5C340'/%3E%3Cpath d='M132 115 Q140 108 148 110 Q156 108 164 115' stroke='%23B8560F' stroke-width='2' fill='none'/%3E%3C/svg%3E">
+
+<!-- Apple touch icon (mesmo SVG via referência local que criaremos) -->
+<link rel="apple-touch-icon" href="logo.png">
+
+<!-- Manifest PWA inline -->
+<link rel="manifest" href='data:application/manifest+json,{"name":"Tortas dos Silva","short_name":"Tortas Silva","start_url":"./","display":"standalone","background_color":"%23FFFBE8","theme_color":"%23E8782C","icons":[{"src":"logo.png","sizes":"512x512","type":"image/png"}]}'>
+
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
@@ -2751,7 +2768,6 @@ function renderFichaCategorias(container) {
       html += `<div class="cat-card ${vazio?'empty':''}" ${vazio?'':`onclick="abrirCategoriaFichas('${c.id}')"`}
                   style="${vazio?'':`border-top:4px solid ${c.cor};`}">
         <div class="cat-card-header">
-          <span class="cat-card-emoji">${c.emoji}</span>
           <div>
             <div class="cat-card-title">${c.nome}</div>
           </div>
@@ -2821,7 +2837,7 @@ function renderFichaLista(container) {
     <div class="ficha-breadcrumb">
       <button class="breadcrumb-back" onclick="voltarCategorias()">← Categorias</button>
       <span style="color:var(--text-muted); font-size:14px;">›</span>
-      <strong style="color:var(--text);">${cat?cat.emoji+' '+cat.nome:'Categoria'}</strong>
+      <strong style="color:var(--text);">${cat?cat.nome:'Categoria'}</strong>
       <span style="color:var(--text-muted); font-size:13px;">— ${fichas.length} ${fichas.length===1?'ficha':'fichas'}</span>
       <div style="margin-left:auto;">
         <button class="btn btn-primary btn-sm" onclick="novaFicha('${fichaCategoriaSelId}')">+ Nova Ficha</button>
@@ -2831,8 +2847,7 @@ function renderFichaLista(container) {
 
   if (fichas.length === 0) {
     html += `<div class="empty-state">
-      <div class="empty-state-emoji">${cat?cat.emoji:'📋'}</div>
-      <p>Nenhuma ficha nesta categoria ainda.</p>
+      <p style="margin-top:30px;">Nenhuma ficha nesta categoria ainda.</p>
     </div>`;
   } else {
     html += '<div class="ficha-grid">';
@@ -2886,24 +2901,20 @@ function renderFichaEditar(container) {
     <div class="ficha-edit-page">
       <div class="ficha-edit-header">
         <div class="ficha-edit-title">
-          <span>✏️</span>
           <input id="f-nome" value="${p.nome}" placeholder="Nome do produto"
                  style="border:none; background:transparent; font-family:'Cormorant Garamond',serif; font-size:24px; font-weight:600; color:var(--laranja-dark); padding:4px; min-width:300px;">
         </div>
       </div>
 
-      <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
-        <div class="form-group">
-          <label>Emoji</label>
-          <input id="f-emoji" value="${p.emoji}" maxlength="4" style="font-size:20px; text-align:center; width:80px;">
-        </div>
+      <input id="f-emoji" type="hidden" value="${p.emoji||''}">
+      <div class="form-grid" style="grid-template-columns: 1fr;">
         <div class="form-group">
           <label>
             Categoria
             <a onclick="navegarConfig()" style="float:right; color:var(--laranja); font-size:10px; cursor:pointer; text-transform:none; letter-spacing:0;">⚙ Gerenciar</a>
           </label>
           <select id="f-categoria-id" onchange="atualizarTipoAutoByCat(this.value)">
-            ${db.categorias.map(c => `<option value="${c.id}" ${(p.categoriaId===c.id)?'selected':''}>${c.emoji} ${c.nome}</option>`).join('')}
+            ${db.categorias.map(c => `<option value="${c.id}" ${(p.categoriaId===c.id)?'selected':''}>${c.nome}</option>`).join('')}
           </select>
         </div>
         <div class="form-group">
@@ -5463,26 +5474,169 @@ function desconectarCloud() {
   toast('Desconectado', 'success');
 }
 
+// =============== CARREGAR / IMPORTAR SEED ===============
+function migrarParaSeedV2() {
+  console.log('[Migração v2] Atualizando fichas...');
+  const custosBackup = {};
+  (db.insumos || []).forEach(i => {
+    if (!i.origemFichaId) {
+      const k = (i.nome || '').toLowerCase().trim();
+      custosBackup[k] = {
+        custoEmbalagem: i.custoEmbalagem, qtdEmbalagem: i.qtdEmbalagem,
+        unidade: i.unidade, estoque: i.estoque || 0,
+        fornecedor: i.fornecedor || '', categoria: i.categoria
+      };
+    }
+  });
+  db.produtos = [];
+  db.insumos = (db.insumos || []).filter(i => !i.origemFichaId);
+  if (!db.categorias) db.categorias = [];
+  CATEGORIAS_DEFAULT.forEach(catDef => {
+    if (!db.categorias.find(c => c.id === catDef.id)) {
+      db.categorias.push(JSON.parse(JSON.stringify(catDef)));
+    }
+  });
+  SEED_TORTAS_SILVA.ingredientes.forEach(ing => {
+    const k = (ing.nome || '').toLowerCase().trim();
+    const existe = db.insumos.find(i => (i.nome || '').toLowerCase().trim() === k);
+    if (!existe) {
+      const backup = custosBackup[k];
+      db.insumos.push({
+        id: uid(), nome: ing.nome,
+        categoria: backup ? backup.categoria : ing.categoria,
+        unidade: backup ? backup.unidade : ing.unidade,
+        qtdEmbalagem: backup ? backup.qtdEmbalagem : ing.qtdEmbalagem,
+        custoEmbalagem: backup ? backup.custoEmbalagem : ing.custoEmbalagem,
+        estoque: backup ? backup.estoque : (ing.estoque || 0),
+        fornecedor: backup ? backup.fornecedor : (ing.fornecedor || ''),
+        obs: ''
+      });
+    }
+  });
+  const mapaIng = {};
+  db.insumos.forEach(i => { mapaIng[_normNome(i.nome)] = i.id; });
+  SEED_TORTAS_SILVA.bases.forEach(b => {
+    const ficha = b.ingredientes.map(ing => ({
+      insumoId: _acharIngrediente(ing.nome, mapaIng),
+      quantidade: ing.qtd
+    })).filter(f => f.insumoId);
+    const cat = getCategoria(b.categoriaId);
+    db.produtos.push({
+      id: uid(), tipo: 'receita_base', nome: b.nome,
+      emoji: cat ? cat.emoji : '🧪',
+      categoriaId: b.categoriaId,
+      categoria: cat ? cat.nome : '',
+      descricao: 'Receita base — Edição 2026',
+      ficha, ativo: true, precos: {},
+      rendimento: {qtd: b.rendimento, unidade: b.unidadeRend || 'kg'}
+    });
+  });
+  sincronizarTodasReceitasBase();
+  db.insumos.forEach(i => { mapaIng[_normNome(i.nome)] = i.id; });
+  SEED_TORTAS_SILVA.tortas.forEach(t => {
+    const ficha = t.ingredientes.map(ing => ({
+      insumoId: _acharIngrediente(ing.nome, mapaIng),
+      quantidade: ing.qtd
+    })).filter(f => f.insumoId);
+    const cat = getCategoria(t.categoriaId);
+    db.produtos.push({
+      id: uid(), tipo: 'produto', nome: t.nome,
+      emoji: t.emoji, categoriaId: t.categoriaId,
+      categoria: cat ? cat.nome : '',
+      descricao: '', ficha, ativo: true,
+      precos: t.precos || {loja:0, ifood:0, revendas:0},
+      precoVenda: (t.precos && t.precos.loja) || 0,
+      rendimento: {qtd: t.rendimento, unidade: 'un'}
+    });
+  });
+  localStorage.setItem(SEED_VERSION_KEY, String(SEED_VERSION));
+  save();
+  return {receitasBase: SEED_TORTAS_SILVA.bases.length, produtos: SEED_TORTAS_SILVA.tortas.length};
+}
+
+function _runImportSeed() {
+  db.insumos = []; db.produtos = []; db.custosFixos = []; db.custosVariaveis = [];
+  if (!db.categorias || db.categorias.length === 0) {
+    db.categorias = JSON.parse(JSON.stringify(CATEGORIAS_DEFAULT));
+  }
+  SEED_TORTAS_SILVA.ingredientes.forEach(ing => {
+    db.insumos.push({
+      id: uid(), nome: ing.nome, categoria: ing.categoria,
+      unidade: ing.unidade, qtdEmbalagem: ing.qtdEmbalagem,
+      custoEmbalagem: ing.custoEmbalagem, estoque: ing.estoque || 0,
+      fornecedor: ing.fornecedor || '', obs: ''
+    });
+  });
+  const mapaIng = {};
+  db.insumos.forEach(i => { mapaIng[_normNome(i.nome)] = i.id; });
+  SEED_TORTAS_SILVA.bases.forEach(b => {
+    const ficha = b.ingredientes.map(ing => ({
+      insumoId: _acharIngrediente(ing.nome, mapaIng),
+      quantidade: ing.qtd
+    })).filter(f => f.insumoId);
+    const cat = getCategoria(b.categoriaId);
+    db.produtos.push({
+      id: uid(), tipo: 'receita_base', nome: b.nome,
+      emoji: cat ? cat.emoji : '🧪',
+      categoriaId: b.categoriaId, categoria: cat ? cat.nome : '',
+      descricao: 'Receita base', ficha, ativo: true, precos: {},
+      rendimento: {qtd: b.rendimento, unidade: b.unidadeRend || 'kg'}
+    });
+  });
+  sincronizarTodasReceitasBase();
+  db.insumos.forEach(i => { mapaIng[_normNome(i.nome)] = i.id; });
+  SEED_TORTAS_SILVA.tortas.forEach(t => {
+    const ficha = t.ingredientes.map(ing => ({
+      insumoId: _acharIngrediente(ing.nome, mapaIng),
+      quantidade: ing.qtd
+    })).filter(f => f.insumoId);
+    const cat = getCategoria(t.categoriaId);
+    db.produtos.push({
+      id: uid(), tipo: 'produto', nome: t.nome,
+      emoji: t.emoji, categoriaId: t.categoriaId,
+      categoria: cat ? cat.nome : '',
+      descricao: '', ficha, ativo: true,
+      precos: t.precos || {loja:0, ifood:0, revendas:0},
+      precoVenda: (t.precos && t.precos.loja) || 0,
+      rendimento: {qtd: t.rendimento, unidade: 'un'}
+    });
+  });
+  SEED_TORTAS_SILVA.custosFixos.forEach(c => {
+    db.custosFixos.push({id: uid(), descricao: c.desc, valor: c.valor});
+  });
+  db.custosVariaveis = [
+    {id: uid(), descricao: 'Taxa de cartao', valor: 3},
+    {id: uid(), descricao: 'Impostos (Simples)', valor: 10},
+    {id: uid(), descricao: 'Perdas', valor: 3}
+  ];
+  save();
+}
+
+function importarTortasDoSilva() {
+  if (!confirm('Isso vai SUBSTITUIR todos os dados atuais. Continuar?')) return;
+  _runImportSeed();
+  toast(`Importados: ${db.insumos.length} ingredientes, ${SEED_TORTAS_SILVA.bases.length} receitas base, ${SEED_TORTAS_SILVA.tortas.length} produtos`, 'success');
+  setTimeout(() => { document.querySelector('.nav-item[data-section=dashboard]').click(); }, 800);
+}
+
+function carregarExemplos() { importarTortasDoSilva(); }
+
 // =============== INIT ===============
 load();
-
-// Inicia sincronização cloud (se já configurada)
 setTimeout(() => { iniciarCloudSync(); }, 100);
 
 if (db.insumos.length === 0 && db.produtos.length === 0 && !localStorage.getItem('tortas-silva-first-seen')) {
   localStorage.setItem('tortas-silva-first-seen', '1');
   localStorage.setItem(SEED_VERSION_KEY, String(SEED_VERSION));
   _runImportSeed();
-  setTimeout(() => toast('✨ Dados da Tortas do Silva carregados (Edição 2026)', 'success'), 500);
+  setTimeout(() => toast('✨ Dados da Tortas dos Silva carregados (Edição 2026)', 'success'), 500);
 } else {
   const versaoAtual = parseInt(localStorage.getItem(SEED_VERSION_KEY) || '1', 10);
   if (versaoAtual < SEED_VERSION) {
     try {
       const r = migrarParaSeedV2();
       setTimeout(() => toast(`✨ Fichas atualizadas: ${r.receitasBase} receitas base + ${r.produtos} produtos (Edição 2026)`, 'success'), 500);
-    } catch (e) {
-      console.error('Erro na migração:', e);
-    }
+    } catch (e) { console.error('Erro na migração:', e); }
   }
 }
 
