@@ -5667,4 +5667,84 @@ function _runImportSeed() {
       id: uid(), nome: ing.nome, categoria: ing.categoria,
       unidade: ing.unidade, qtdEmbalagem: ing.qtdEmbalagem,
       custoEmbalagem: ing.custoEmbalagem, estoque: ing.estoque || 0,
-      fornece
+      fornecedor: ing.fornecedor || '', obs: ''
+    });
+  });
+  const mapaIng = {};
+  db.insumos.forEach(i => { mapaIng[_normNome(i.nome)] = i.id; });
+  SEED_TORTAS_SILVA.bases.forEach(b => {
+    const ficha = b.ingredientes.map(ing => ({
+      insumoId: _acharIngrediente(ing.nome, mapaIng),
+      quantidade: ing.qtd
+    })).filter(f => f.insumoId);
+    const cat = getCategoria(b.categoriaId);
+    db.produtos.push({
+      id: uid(), tipo: 'receita_base', nome: b.nome,
+      emoji: cat ? cat.emoji : '🧪',
+      categoriaId: b.categoriaId, categoria: cat ? cat.nome : '',
+      descricao: 'Receita base', ficha, ativo: true, precos: {},
+      rendimento: {qtd: b.rendimento, unidade: b.unidadeRend || 'kg'}
+    });
+  });
+  sincronizarTodasReceitasBase();
+  db.insumos.forEach(i => { mapaIng[_normNome(i.nome)] = i.id; });
+  SEED_TORTAS_SILVA.tortas.forEach(t => {
+    const ficha = t.ingredientes.map(ing => ({
+      insumoId: _acharIngrediente(ing.nome, mapaIng),
+      quantidade: ing.qtd
+    })).filter(f => f.insumoId);
+    const cat = getCategoria(t.categoriaId);
+    db.produtos.push({
+      id: uid(), tipo: 'produto', nome: t.nome,
+      emoji: t.emoji, categoriaId: t.categoriaId,
+      categoria: cat ? cat.nome : '',
+      descricao: '', ficha, ativo: true,
+      precos: t.precos || {loja:0, ifood:0, revendas:0},
+      precoVenda: (t.precos && t.precos.loja) || 0,
+      rendimento: {qtd: t.rendimento, unidade: 'un'}
+    });
+  });
+  SEED_TORTAS_SILVA.custosFixos.forEach(c => {
+    db.custosFixos.push({id: uid(), descricao: c.desc, valor: c.valor});
+  });
+  db.custosVariaveis = [
+    {id: uid(), descricao: 'Taxa de cartao', valor: 3},
+    {id: uid(), descricao: 'Impostos (Simples)', valor: 10},
+    {id: uid(), descricao: 'Perdas', valor: 3}
+  ];
+  save();
+}
+
+function importarTortasDoSilva() {
+  if (!confirm('Isso vai SUBSTITUIR todos os dados atuais. Continuar?')) return;
+  _runImportSeed();
+  toast(`Importados: ${db.insumos.length} ingredientes, ${SEED_TORTAS_SILVA.bases.length} receitas base, ${SEED_TORTAS_SILVA.tortas.length} produtos`, 'success');
+  setTimeout(() => { document.querySelector('.nav-item[data-section=dashboard]').click(); }, 800);
+}
+
+function carregarExemplos() { importarTortasDoSilva(); }
+
+// =============== INIT ===============
+load();
+setTimeout(() => { iniciarCloudSync(); }, 100);
+
+if (db.insumos.length === 0 && db.produtos.length === 0 && !localStorage.getItem('tortas-silva-first-seen')) {
+  localStorage.setItem('tortas-silva-first-seen', '1');
+  localStorage.setItem(SEED_VERSION_KEY, String(SEED_VERSION));
+  _runImportSeed();
+  setTimeout(() => toast('✨ Dados da Tortas dos Silva carregados (Edição 2026)', 'success'), 500);
+} else {
+  const versaoAtual = parseInt(localStorage.getItem(SEED_VERSION_KEY) || '1', 10);
+  if (versaoAtual < SEED_VERSION) {
+    try {
+      const r = migrarParaSeedV2();
+      setTimeout(() => toast(`✨ Fichas atualizadas: ${r.receitasBase} receitas base + ${r.produtos} produtos (Edição 2026)`, 'success'), 500);
+    } catch (e) { console.error('Erro na migração:', e); }
+  }
+}
+
+renderDashboard();
+carregarConfig();
+</script>
+</body>
+</html>
