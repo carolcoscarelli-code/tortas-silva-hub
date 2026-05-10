@@ -1460,7 +1460,12 @@ textarea { resize: vertical; min-height: 72px; }
     overflow-y: auto;
   }
   .sidebar.open { transform: translateX(0); }
-  .main { margin-left: 0; padding: 14px 12px 80px; }
+  .main {
+    margin-left: 0;
+    max-width: 100%;
+    width: 100%;
+    padding: 14px 12px 80px;
+  }
 
   /* Bottom nav visível */
   .bottom-nav { display: flex; }
